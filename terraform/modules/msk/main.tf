@@ -86,7 +86,7 @@ resource "aws_security_group" "msk" {
   }
 }
 
-# Kafka Provider Configuration
+# Kafka Provider Configuration (requires bootstrap servers from MSK)
 terraform {
   required_providers {
     kafka = {
@@ -97,89 +97,110 @@ terraform {
 }
 
 provider "kafka" {
-  bootstrap_servers = [split(",", aws_msk_cluster.main.bootstrap_brokers_tls)[0]]
+  bootstrap_servers = [aws_msk_cluster.main.bootstrap_brokers_tls]
   tls_enabled       = true
-  
-  # For IAM authentication in production
-  # sasl_mechanism = "aws"
-  # sasl_aws_region = var.aws_region
+
+  # For IAM authentication
+  sasl_mechanism = "SCRAM-SHA-512"
+  sasl_username  = var.kafka_admin_username
+  sasl_password  = var.kafka_admin_password
 }
 
-# Create initial Kafka topics
+# Create initial topics for the platform
 resource "kafka_topic" "user_events" {
   name               = "user-events"
   replication_factor = 3
   partitions         = 6
-  
-  config = {
-    "cleanup.policy"      = "delete"
-    "retention.ms"        = "604800000"  # 7 days
-    "segment.ms"          = "86400000"   # 1 day
-    "min.insync.replicas" = "2"
-  }
 
-  depends_on = [aws_msk_cluster.main]
+  config = {
+    "retention.ms"           = "604800000"  # 7 days
+    "segment.ms"             = "3600000"    # 1 hour
+    "min.insync.replicas"    = "2"
+    "cleanup.policy"         = "delete"
+    "compression.type"       = "snappy"
+  }
 }
 
 resource "kafka_topic" "transaction_events" {
   name               = "transaction-events"
   replication_factor = 3
-  partitions         = 12  # Higher partitions for transaction volume
-  
-  config = {
-    "cleanup.policy"      = "delete"
-    "retention.ms"        = "2592000000"  # 30 days (compliance)
-    "segment.ms"          = "86400000"    # 1 day
-    "min.insync.replicas" = "2"
-    "compression.type"    = "snappy"
-  }
+  partitions         = 12  # Higher for transaction volume
 
-  depends_on = [aws_msk_cluster.main]
+  config = {
+    "retention.ms"           = "2592000000"  # 30 days
+    "segment.ms"             = "3600000"     # 1 hour
+    "min.insync.replicas"    = "2"
+    "cleanup.policy"         = "delete"
+    "compression.type"       = "snappy"
+  }
 }
 
 resource "kafka_topic" "auth_events" {
   name               = "auth-events"
   replication_factor = 3
   partitions         = 6
-  
-  config = {
-    "cleanup.policy"      = "delete"
-    "retention.ms"        = "1209600000"  # 14 days (security audit)
-    "segment.ms"          = "86400000"    # 1 day
-    "min.insync.replicas" = "2"
-  }
 
-  depends_on = [aws_msk_cluster.main]
+  config = {
+    "retention.ms"           = "2592000000"  # 30 days
+    "segment.ms"             = "3600000"     # 1 hour
+    "min.insync.replicas"    = "2"
+    "cleanup.policy"         = "delete"
+    "compression.type"       = "snappy"
+  }
 }
 
 resource "kafka_topic" "audit_logs" {
   name               = "audit-logs"
   replication_factor = 3
   partitions         = 6
-  
-  config = {
-    "cleanup.policy"      = "delete"
-    "retention.ms"        = "7776000000"  # 90 days (compliance)
-    "segment.ms"          = "86400000"    # 1 day
-    "min.insync.replicas" = "2"
-    "compression.type"    = "gzip"
-  }
 
-  depends_on = [aws_msk_cluster.main]
+  config = {
+    "retention.ms"           = "15552000000"  # 180 days (6 months)
+    "segment.ms"             = "86400000"     # 24 hours
+    "min.insync.replicas"    = "2"
+    "cleanup.policy"         = "delete"
+    "compression.type"       = "snappy"
+  }
 }
 
-# Dead Letter Queue topic for failed messages
-resource "kafka_topic" "dlq" {
-  name               = "dlq-topic"
+resource "kafka_topic" "dead_letter_queue" {
+  name               = "dead-letter-queue"
   replication_factor = 3
   partitions         = 3
-  
-  config = {
-    "cleanup.policy"      = "delete"
-    "retention.ms"        = "2592000000"  # 30 days
-    "segment.ms"          = "86400000"    # 1 day
-    "min.insync.replicas" = "2"
-  }
 
-  depends_on = [aws_msk_cluster.main]
+  config = {
+    "retention.ms"           = "2592000000"  # 30 days
+    "segment.ms"             = "3600000"     # 1 hour
+    "min.insync.replicas"    = "2"
+    "cleanup.policy"         = "delete"
+    "compression.type"       = "snappy"
+  }
+}
+
+# ACLs for service access (IAM-based alternative recommended for production)
+resource "kafka_acl" "auth_service_producer" {
+  resource_name       = "auth-events"
+  resource_type       = "Topic"
+  acl_principal       = "User:auth-service"
+  acl_host            = "*"
+  acl_operation       = "Write"
+  acl_permission_type = "Allow"
+}
+
+resource "kafka_acl" "user_service_producer" {
+  resource_name       = "user-events"
+  resource_type       = "Topic"
+  acl_principal       = "User:user-service"
+  acl_host            = "*"
+  acl_operation       = "Write"
+  acl_permission_type = "Allow"
+}
+
+resource "kafka_acl" "transaction_service_producer" {
+  resource_name       = "transaction-events"
+  resource_type       = "Topic"
+  acl_principal       = "User:transaction-service"
+  acl_host            = "*"
+  acl_operation       = "Write"
+  acl_permission_type = "Allow"
 }
