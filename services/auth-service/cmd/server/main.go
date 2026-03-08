@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	logger, _ := logging.NewProductionLogger()
+	logger, _ := logging.NewProduction()
 	defer logger.Sync()
 
 	// Initialize database
