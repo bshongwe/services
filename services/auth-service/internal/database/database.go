@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/your-org/platform-services/auth-service/internal/model"
+	"github.com/bshongwe/services/auth-service/internal/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
