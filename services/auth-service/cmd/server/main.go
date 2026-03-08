@@ -6,29 +6,46 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 
-	"your-org/platform-services/auth-service/internal/database"
-	"your-org/platform-services/auth-service/internal/handler"
-	"your-org/platform-services/auth-service/internal/repository"
-	"your-org/platform-services/auth-service/internal/service"
-	"your-org/platform-services/shared/logging"
+	"github.com/bshongwe/services/auth-service/internal/database"
+	"github.com/bshongwe/services/auth-service/internal/handler"
+	"github.com/bshongwe/services/auth-service/internal/repository"
+	"github.com/bshongwe/services/auth-service/internal/service"
+	"github.com/bshongwe/services/shared/logging"
 )
 
+var logger *zap.Logger
+
 func main() {
-	logger, _ := logging.NewProduction()
+	// Initialize logger with error handling
+	var err error
+	logger, err = logging.NewProduction()
+	if err != nil {
+		log.Fatalf("Failed to init logger: %v", err)
+	}
 	defer logger.Sync()
+
+	// Load .env for local development
+	if os.Getenv("ENV") == "dev" {
+		if err := godotenv.Load(); err != nil {
+			logger.Warn("No .env file found, using environment variables")
+		} else {
+			logger.Info("Loaded configuration from .env file")
+		}
+	}
 
 	// Initialize database
 	dbConfig := database.LoadConfigFromEnv()
 	db, err := database.Connect(dbConfig)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		logger.Fatal("Failed to connect to database", zap.Error(err))
 	}
 
 	// Run migrations
 	if err := database.Migrate(db); err != nil {
-		log.Fatalf("Failed to run migrations: %v", err)
+		logger.Fatal("Failed to run migrations", zap.Error(err))
 	}
 	logger.Info("Database migrations completed successfully")
 
@@ -51,7 +68,10 @@ func main() {
 
 	// Health check
 	r.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "healthy"})
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "ok",
+			"service": "auth-service",
+		})
 	})
 
 	// Auth routes
@@ -65,11 +85,10 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	addr := ":" + port
 
-	logger.Info("Starting Auth Service", zap.String("port", addr))
-	if err := r.Run(addr); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+	logger.Info("Auth Service starting", zap.String("port", port))
+	if err := r.Run(":" + port); err != nil {
+		logger.Fatal("Server failed", zap.Error(err))
 	}
 }
 
