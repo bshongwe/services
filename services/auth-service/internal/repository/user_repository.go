@@ -3,7 +3,7 @@ package repository
 import (
 	"errors"
 
-	"github.com/your-org/platform-services/auth-service/internal/model"
+	"github.com/bshongwe/services/services/auth-service/internal/model"
 	"gorm.io/gorm"
 )
 

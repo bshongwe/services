@@ -6,8 +6,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/your-org/platform-services/auth-service/internal/model"
-	"github.com/your-org/platform-services/auth-service/internal/repository"
+	"github.com/bshongwe/services/auth-service/internal/model"
+	"github.com/bshongwe/services/auth-service/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 )
 
