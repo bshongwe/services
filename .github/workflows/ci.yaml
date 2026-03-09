@@ -28,6 +28,10 @@ jobs:
       working-directory: services/${{ matrix.service }}
       run: go mod download
     
+    - name: Verify dependencies
+      working-directory: services/${{ matrix.service }}
+      run: go mod verify
+    
     - name: Lint
       working-directory: services/${{ matrix.service }}
       run: go vet ./...
