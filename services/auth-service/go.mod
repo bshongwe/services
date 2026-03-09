@@ -1,6 +1,6 @@
 module github.com/bshongwe/services/auth-service
 
-go 1.26
+go 1.25.0
 
 require (
 	github.com/bshongwe/services/shared/logging v0.0.0

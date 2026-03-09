@@ -1,6 +1,6 @@
 module github.com/bshongwe/services/shared/config
 
-go 1.26
+go 1.23
 
 require github.com/spf13/viper v1.18.2
 
