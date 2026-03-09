@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/bshongwe/services/services/auth-service/internal/repository"
-	"github.com/bshongwe/services/services/auth-service/internal/service"
+	"github.com/bshongwe/services/auth-service/internal/repository"
+	"github.com/bshongwe/services/auth-service/internal/service"
 )
 
 type AuthHandler struct {
