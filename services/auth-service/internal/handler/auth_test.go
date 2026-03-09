@@ -9,9 +9,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"github.com/your-org/platform-services/auth-service/internal/handler"
-	"github.com/your-org/platform-services/auth-service/internal/repository"
-	"github.com/your-org/platform-services/auth-service/internal/service"
+	"github.com/bshongwe/services/auth-service/internal/handler"
+	"github.com/bshongwe/services/auth-service/internal/model"
+	"github.com/bshongwe/services/auth-service/internal/repository"
+	"github.com/bshongwe/services/auth-service/internal/service"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -23,7 +24,7 @@ func setupTestDB(t *testing.T) *gorm.DB {
 	}
 
 	// Auto migrate
-	if err := db.AutoMigrate(&repository.User{}); err != nil {
+	if err := db.AutoMigrate(&model.User{}); err != nil {
 		t.Fatalf("Failed to migrate: %v", err)
 	}
 
