@@ -1,6 +1,6 @@
 module github.com/your-org/platform-services/shared/telemetry
 
-go 1.24.0
+go 1.23
 
 require (
 	go.opentelemetry.io/otel v1.24.0
