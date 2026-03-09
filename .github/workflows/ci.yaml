@@ -10,6 +10,9 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     
+    env:
+      GOTOOLCHAIN: local  # Prevent Go from auto-downloading newer toolchains
+    
     strategy:
       matrix:
         service: [auth-service, user-service, transaction-service]
