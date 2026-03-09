@@ -1,3 +1,3 @@
-module github.com/yourusername/services/user-service
+module github.com/bshongwe/services/user-service
 
-go 1.22
+go 1.23

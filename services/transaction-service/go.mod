@@ -1,3 +1,3 @@
-module github.com/yourusername/services/transaction-service
+module github.com/bshongwe/services/transaction-service
 
-go 1.22
+go 1.23
