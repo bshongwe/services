@@ -47,9 +47,10 @@ jobs:
       working-directory: services/${{ matrix.service }}
       run: go build -o bin/${{ matrix.service }} ./cmd/server
     
-    - name: Upload coverage
-      uses: codecov/codecov-action@v4
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v5
       with:
+        token: ${{ secrets.CODECOV_TOKEN }}
         files: services/${{ matrix.service }}/coverage.out
         flags: ${{ matrix.service }}
         fail_ci_if_error: false
