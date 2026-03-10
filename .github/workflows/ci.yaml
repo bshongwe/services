@@ -70,7 +70,6 @@ jobs:
       uses: docker/setup-buildx-action@v3
     
     - name: Build Docker image
-      working-directory: services
       run: |
-        docker build -f ${{ matrix.service }}/Dockerfile -t ${{ matrix.service }}:${{ github.sha }} .
-        docker build -f ${{ matrix.service }}/Dockerfile -t ${{ matrix.service }}:latest .
+        docker build -f services/${{ matrix.service }}/Dockerfile -t ${{ matrix.service }}:${{ github.sha }} .
+        docker build -f services/${{ matrix.service }}/Dockerfile -t ${{ matrix.service }}:latest .
