@@ -65,3 +65,9 @@ Please read CONTRIBUTING.md for details on our code of conduct and the process f
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+# Reference Repos
+
+1. **Infra:** https://github.com/bshongwe/infra
+2. **Fraud Detection ML System:** https://github.com/bshongwe/ml
+3. **Services:** https://github.com/bshongwe/services
