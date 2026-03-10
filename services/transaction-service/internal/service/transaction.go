@@ -2,15 +2,29 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/segmentio/kafka-go"
+	"go.uber.org/zap"
 	"time"
 )
 
 type Transaction struct {
-	ID        string  `json:"id"`
-	UserID    string  `json:"user_id"`
-	Amount    float64 `json:"amount"`
-	CreatedAt time.Time
+	ID        string    `json:"id"`
+	UserID    string    `json:"user_id"`
+	Amount    float64   `json:"amount"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// TransactionService handles transaction business logic
+type TransactionService struct {
+	logger *zap.Logger
+}
+
+// NewTransactionService creates a new transaction service
+func NewTransactionService(logger *zap.Logger) *TransactionService {
+	return &TransactionService{
+		logger: logger,
+	}
 }
 
 func (s *TransactionService) Create(tx Transaction) error {
@@ -30,7 +44,7 @@ func (s *TransactionService) Create(tx Transaction) error {
 	}
 
 	if err := writer.WriteMessages(context.Background(), msg); err != nil {
-		logger.Error("Failed to produce event", zap.Error(err))
+		s.logger.Error("Failed to produce event", zap.Error(err))
 		return err
 	}
 
